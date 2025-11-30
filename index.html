@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Petualangan Mendaki Gunung - Latihan UAS Kelas 3</title>
+    <title>Petualangan Mendaki Gunung - Latihan UAS Kelas 3 (Update PKn)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -27,47 +27,12 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .mountain {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 250px solid transparent;
-            border-right: 250px solid transparent;
-            border-bottom: 350px solid #4ade80; /* Green base */
-        }
-        
-        .mountain::after {
-            content: '';
-            position: absolute;
-            top: 100px; /* Offset from the phantom top */
-            left: -100px;
-            width: 0;
-            height: 0;
-            border-left: 100px solid transparent;
-            border-right: 100px solid transparent;
-            border-bottom: 120px solid #ecfccb; /* Snowy peak */
-            transform: translateY(130px); /* Adjust position */
-        }
-
         /* Better SVG Mountain */
         .svg-mountain {
             position: absolute;
             bottom: 0;
             width: 100%;
             height: 100%;
-        }
-
-        .path-node {
-            width: 20px;
-            height: 20px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            position: absolute;
-            transform: translate(-50%, -50%);
-            z-index: 10;
         }
 
         .climber {
@@ -88,15 +53,6 @@
             transform: scale(0.98);
         }
 
-        .correct-anim {
-            animation: bounce 0.5s;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
         .confetti {
             position: absolute;
             width: 10px;
@@ -108,14 +64,44 @@
         @keyframes fall {
             to { transform: translateY(100vh) rotate(720deg); }
         }
+        
+        /* Modal Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid #fff;
+        }
     </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col items-center py-4">
 
+    <!-- Start Screen Modal -->
+    <div id="start-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-sm p-4">
+        <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl text-center transform transition-all scale-100">
+            <div class="text-6xl mb-4">🏔️</div>
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">Siap Mendaki?</h1>
+            <p class="text-gray-600 mb-6">Masukkan namamu untuk mulai petualangan!</p>
+            
+            <input type="text" id="player-name-input" placeholder="Namamu di sini..." class="w-full px-6 py-4 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none text-lg text-center font-bold mb-4 bg-blue-50" autocomplete="off">
+            
+            <button onclick="startGameSession()" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-105">
+                Mulai Petualangan! 🚀
+            </button>
+
+            <!-- Mini Leaderboard Preview -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">🏆 Pendaki Terbaik</h3>
+                <div id="leaderboard-preview" class="space-y-2 text-left text-sm">
+                    <p class="text-gray-400 italic text-center">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="text-center mb-4 px-4">
-        <h1 class="text-3xl font-bold text-blue-600 mb-1">Misi Mendaki Gunung</h1>
-        <p class="text-gray-600">Jawab benar untuk mencapai puncak!</p>
+        <h1 class="text-3xl font-bold text-blue-600 mb-1">Misi Puncak Gunung</h1>
+        <p class="text-gray-600">Level: Analisis & Logika (50 Soal)</p>
     </header>
 
     <!-- Game Container -->
@@ -123,14 +109,17 @@
         
         <!-- Score Board -->
         <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm">
-            <div class="text-lg font-bold text-orange-500">
-                <i class="fas fa-star mr-1"></i> Skor: <span id="score">0</span>
+            <div class="flex flex-col">
+                <div class="text-xs text-gray-400 font-bold" id="player-display-name">Player</div>
+                <div class="text-lg font-bold text-orange-500">
+                    <i class="fas fa-star mr-1"></i> Skor: <span id="score">0</span>
+                </div>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-gray-500 font-semibold text-sm md:text-base">
-                    Soal: <span id="q-progress">1</span> / 30
+                    Soal: <span id="q-progress">1</span> / 50
                 </div>
-                <button onclick="resetGame()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-blue-600 p-2 rounded-lg transition-colors title='Mulai Ulang'">
+                <button onclick="resetGame()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-blue-600 p-2 rounded-lg transition-colors" title="Mulai Ulang">
                     <i class="fas fa-redo-alt"></i> <span class="hidden md:inline ml-1 text-sm font-bold">Ulang</span>
                 </button>
             </div>
@@ -170,7 +159,7 @@
             </div>
 
             <!-- Question Text -->
-            <h2 id="question-text" class="text-xl md:text-2xl font-bold text-center text-gray-800 mb-6 min-h-[80px] flex items-center justify-center">
+            <h2 id="question-text" class="text-lg md:text-xl font-bold text-center text-gray-800 mb-6 min-h-[80px] flex items-center justify-center">
                 Memuat soal...
             </h2>
 
@@ -189,11 +178,13 @@
         </div>
 
         <!-- Results Card (Hidden initially) -->
-        <div id="result-card" class="hidden bg-white p-8 rounded-2xl shadow-lg text-center">
+        <div id="result-card" class="hidden bg-white p-8 rounded-2xl shadow-lg text-center w-full">
             <div class="text-6xl mb-4">🏆</div>
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Selamat!</h2>
-            <p class="text-gray-600 mb-6">Kamu telah menyelesaikan semua rintangan.</p>
-            <div class="text-4xl font-bold text-blue-600 mb-6">Nilai: <span id="final-score">0</span></div>
+            <p class="text-gray-600 mb-6">Kamu telah menaklukkan semua tantangan!</p>
+            <div class="text-4xl font-bold text-blue-600 mb-2">Nilai: <span id="final-score">0</span></div>
+            <div id="save-status" class="text-sm text-green-500 font-bold mb-6 h-6"></div>
+            
             <button onclick="resetGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
                 Main Lagi
             </button>
@@ -201,206 +192,174 @@
 
     </div>
 
-    <script>
-        // Database Soal (30 Soal: Campuran MTK & PKn)
-        const questionBank = [
-            // --- MATEMATIKA: Bilangan & Garis Bilangan ---
-            {
-                category: "Matematika: Bilangan",
-                question: "Lambang bilangan dari 'tiga ribu lima ratus dua puluh' adalah...",
-                options: ["3.502", "3.520", "3.250", "3.052"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Garis Bilangan",
-                question: "Perhatikan urutan bilangan ini: 125, 130, 135, ..., 145. Angka yang tepat untuk mengisi titik-titik adalah...",
-                options: ["136", "138", "140", "142"],
-                correct: 2
-            },
-            {
-                category: "Matematika: Perbandingan",
-                question: "Bandingkan bilangan ini: 2.450 ... 2.540",
-                options: ["< (lebih kecil)", "> (lebih besar)", "= (sama dengan)", "+ (tambah)"],
-                correct: 0
-            },
-            
-            // --- MATEMATIKA: Penjumlahan & Pengurangan ---
-            {
-                category: "Matematika: Penjumlahan",
-                question: "Hasil dari 1.250 + 1.300 adalah...",
-                options: ["2.500", "2.550", "2.650", "2.450"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Pengurangan",
-                question: "Hasil dari 500 - 225 adalah...",
-                options: ["275", "375", "285", "175"],
-                correct: 0
-            },
-            {
-                category: "Matematika: Hitung Campuran",
-                question: "Ayah membeli 150 batu bata, lalu membeli lagi 100. Kemudian dipakai 50. Sisa batu bata adalah...",
-                options: ["150", "250", "200", "300"],
-                correct: 2
-            },
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            // --- MATEMATIKA: Perkalian Dasar ---
-            {
-                category: "Matematika: Perkalian",
-                question: "Bentuk penjumlahan berulang dari 4 x 5 adalah...",
-                options: ["4 + 4 + 4 + 4", "5 + 5 + 5 + 5", "5 + 5 + 5 + 5 + 5", "4 + 5"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Perkalian",
-                question: "Hasil dari 8 x 7 adalah...",
-                options: ["54", "56", "48", "64"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Perkalian",
-                question: "Hasil dari 9 x 6 adalah...",
-                options: ["54", "45", "63", "56"],
-                correct: 0
-            },
+        // Initialize Firebase
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-            // --- MATEMATIKA: Sifat Pertukaran & Pengelompokan ---
-            {
-                category: "Matematika: Sifat Asosiatif",
-                question: "Hasil dari (3 x 2) x 4 sama dengan...",
-                options: ["3 x (2 x 4)", "3 + (2 + 4)", "3 x 2 + 4", "(3 + 2) x 4"],
-                correct: 0
-            },
-            {
-                category: "Matematika: Sifat Distributif",
-                question: "3 x (10 + 5) jika diuraikan menjadi...",
-                options: ["(3 x 10) + 5", "(3 x 10) + (3 x 5)", "3 + 10 + 5", "10 x (3 + 5)"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Sifat Komutatif",
-                question: "12 x 5 = ... x 12",
-                options: ["10", "60", "5", "7"],
-                correct: 2
-            },
+        let currentUser = null;
 
-            // --- MATEMATIKA: Soal Cerita Perkalian ---
-            {
-                category: "Matematika: Soal Cerita",
-                question: "Ibu membeli 5 kotak donat. Setiap kotak berisi 6 donat. Berapa jumlah seluruh donat?",
-                options: ["11", "25", "30", "35"],
-                correct: 2
-            },
-            {
-                category: "Matematika: Soal Cerita",
-                question: "Di parkiran ada 8 mobil. Setiap mobil punya 4 roda. Berapa jumlah semua roda mobil?",
-                options: ["32", "24", "28", "36"],
-                correct: 0
-            },
-            {
-                category: "Matematika: Soal Cerita",
-                question: "Pak Budi punya 4 kandang ayam. Tiap kandang berisi 10 ayam. Berapa total ayam Pak Budi?",
-                options: ["14", "40", "44", "400"],
-                correct: 1
-            },
-             {
-                category: "Matematika: Perkalian Besar",
-                question: "Hasil dari 12 x 10 adalah...",
-                options: ["120", "210", "102", "112"],
-                correct: 0
-            },
+        // Auth Listener
+        const initAuth = async () => {
+             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+             } else {
+                await signInAnonymously(auth);
+             }
+        };
+        initAuth();
 
-            // --- PKn (Pendidikan Kewarganegaraan) ---
-            {
-                category: "PKn: Lambang Negara",
-                question: "Lambang negara Indonesia adalah...",
-                options: ["Bendera Merah Putih", "Garuda Pancasila", "UUD 1945", "Padi dan Kapas"],
-                correct: 1
-            },
-            {
-                category: "PKn: Sila Pancasila",
-                question: "Simbol Sila Pertama Pancasila adalah...",
-                options: ["Bintang", "Rantai", "Pohon Beringin", "Kepala Banteng"],
-                correct: 0
-            },
-            {
-                category: "PKn: Sila Pancasila",
-                question: "Bunyi sila ketiga Pancasila adalah...",
-                options: ["Ketuhanan Yang Maha Esa", "Kemanusiaan yang adil dan beradab", "Persatuan Indonesia", "Keadilan sosial bagi seluruh rakyat Indonesia"],
-                correct: 2
-            },
-            {
-                category: "PKn: Kebhinekaan",
-                question: "Semboyan 'Bhinneka Tunggal Ika' artinya...",
-                options: ["Maju terus pantang mundur", "Berbeda-beda tetapi tetap satu jua", "Bersatu kita teguh bercerai kita runtuh", "Rajin pangkal pandai"],
-                correct: 1
-            },
-            {
-                category: "PKn: Hak & Kewajiban",
-                question: "Sesuatu yang harus kita terima disebut...",
-                options: ["Kewajiban", "Hak", "Tugas", "Hadiah"],
-                correct: 1
-            },
-            {
-                category: "PKn: Hak & Kewajiban",
-                question: "Membersihkan kelas sesuai jadwal piket adalah contoh...",
-                options: ["Hak siswa", "Kewajiban siswa", "Hak guru", "Larangan"],
-                correct: 1
-            },
-            {
-                category: "PKn: Aturan",
-                question: "Jika berbuat salah kepada teman, sebaiknya kita...",
-                options: ["Diam saja", "Marah-marah", "Meminta maaf", "Menyalahkannya"],
-                correct: 2
-            },
-            {
-                category: "PKn: Kerjasama",
-                question: "Pekerjaan berat akan terasa ringan jika dikerjakan dengan cara...",
-                options: ["Sendiri-sendiri", "Gotong royong", "Menyuruh orang lain", "Ditunda"],
-                correct: 1
-            },
-            {
-                category: "PKn: Sumpah Pemuda",
-                question: "Bahasa persatuan kita adalah bahasa...",
-                options: ["Daerah", "Inggris", "Melayu", "Indonesia"],
-                correct: 3
-            },
-            {
-                category: "PKn: Norma",
-                question: "Sebelum makan sebaiknya kita...",
-                options: ["Tidur", "Berdoa dan cuci tangan", "Bermain HP", "Langsung makan"],
-                correct: 1
-            },
-            {
-                category: "PKn: Lingkungan",
-                question: "Menjaga kebersihan lingkungan sekolah adalah tanggung jawab...",
-                options: ["Penjaga sekolah saja", "Guru saja", "Semua warga sekolah", "Kepala sekolah"],
-                correct: 2
-            },
-            {
-                category: "PKn: Musyawarah",
-                question: "Cara mengambil keputusan bersama yang baik adalah dengan...",
-                options: ["Berkelahi", "Undian", "Musyawarah", "Memaksa teman"],
-                correct: 2
-            },
-            {
-                category: "Matematika: Garis Bilangan",
-                question: "Angka 245 terletak di sebelah ... angka 246",
-                options: ["Kanan", "Kiri", "Atas", "Bawah"],
-                correct: 1
-            },
-            {
-                category: "Matematika: Perkalian",
-                question: "Semua bilangan jika dikalikan 0 maka hasilnya...",
-                options: ["1", "Bilangan itu sendiri", "0", "10"],
-                correct: 2
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                subscribeToLeaderboard();
             }
+        });
+
+        // Save Score Function
+        window.saveScoreToDB = async function(finalScore, playerName) {
+            if (!currentUser) return;
+            const statusEl = document.getElementById('save-status');
+            statusEl.textContent = "Menyimpan skor...";
+            
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'scores'), {
+                    name: playerName || "Anonim",
+                    score: finalScore,
+                    timestamp: new Date().toISOString(),
+                    uid: currentUser.uid
+                });
+                statusEl.textContent = "✅ Skor berhasil disimpan!";
+            } catch (e) {
+                console.error("Error saving score: ", e);
+                statusEl.textContent = "⚠️ Gagal menyimpan skor (Koneksi error)";
+            }
+        }
+
+        // Leaderboard Listener
+        function subscribeToLeaderboard() {
+            if (!currentUser) return;
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+
+            onSnapshot(q, (snapshot) => {
+                const scores = [];
+                snapshot.forEach((doc) => {
+                    scores.push(doc.data());
+                });
+
+                scores.sort((a, b) => b.score - a.score);
+                const top5 = scores.slice(0, 5);
+                renderLeaderboard(top5);
+
+            }, (error) => {
+                console.error("Error fetching leaderboard:", error);
+            });
+        }
+
+        function renderLeaderboard(data) {
+            const container = document.getElementById('leaderboard-preview');
+            if(data.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 italic text-center">Belum ada data. Jadilah yang pertama!</p>';
+                return;
+            }
+
+            let html = '';
+            data.forEach((item, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👏';
+                html += `
+                    <div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <span>${medal}</span>
+                            <span class="font-bold text-blue-800 truncate max-w-[150px]">${item.name}</span>
+                        </div>
+                        <span class="font-bold text-orange-500">${item.score}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+
+    <!-- Main Game Logic -->
+    <script>
+        // Database Soal: 50 Soal (25 MTK + 25 PKn Fokus Materi Khusus)
+        const questionBank = [
+             // --- MATEMATIKA: Analisis Bilangan & Pola ---
+            { category: "Matematika: Teka-teki", question: "Aku adalah bilangan ganjil > 340 tapi < 350. Angka satuanku 5. Siapakah aku?", options: ["343", "345", "355", "335"], correct: 1 },
+            { category: "Matematika: Pola", question: "120, 125, 130, A, 140. Nilai A adalah...", options: ["132", "135", "138", "131"], correct: 1 },
+            { category: "Matematika: Garis Bilangan", question: "P di kanan 250. Q di kiri 250. Maka...", options: ["P < Q", "Q > P", "P > Q", "P = Q"], correct: 2 },
+            { category: "Matematika: Nilai Tempat", question: "4.825. Jika angka 8 ditukar dengan 2, menjadi...", options: ["4.285", "4.852", "2.845", "4.258"], correct: 0 },
+            { category: "Matematika: Logika", question: "A + 150 = 400. Berapakah A?", options: ["200", "250", "300", "550"], correct: 1 },
+
+            // --- MATEMATIKA: Operasi & Cerita ---
+            { category: "Matematika: Cerita", question: "250 apel. 50 busuk dibuang. Sisanya dibagi 2 keranjang. Isi tiap keranjang?", options: ["100", "125", "200", "150"], correct: 0 },
+            { category: "Matematika: Penjumlahan", question: "Budi 125 kelereng. Andi 2x lipat Budi. Kelereng Andi?", options: ["127", "200", "250", "300"], correct: 2 },
+            { category: "Matematika: Pengurangan", question: "Air 500. Pagi -150, Sore -200. Sisa?", options: ["100", "150", "250", "350"], correct: 1 },
+            { category: "Matematika: Logika", question: "25 + ... = 100 - 25. Isi titik-titik?", options: ["25", "50", "75", "0"], correct: 1 },
+            { category: "Matematika: Uang", question: "Harga Rp500. Bayar Rp5.000, kembali Rp2.000. Beli berapa?", options: ["4", "5", "6", "10"], correct: 2 },
+            { category: "Matematika: Estimasi", question: "Beli barang Rp1.100, Rp2.900, Rp4.200. Kira-kira butuh...", options: ["Rp 5rb", "Rp 7rb", "Rp 9rb", "Rp 10rb"], correct: 2 },
+            { category: "Matematika: Campuran", question: "(200 - 50) + (100 - 25) = ...", options: ["200", "225", "175", "250"], correct: 1 },
+            { category: "Matematika: Jarak", question: "A ke B 100m. B ke C 150m. Jalan A->C lalu balik ke B. Jarak tempuh?", options: ["250m", "300m", "400m", "500m"], correct: 2 },
+            { category: "Matematika: Selisih", question: "Selisih nilai angka 5 pada 5.500 adalah...", options: ["0", "500", "4.500", "4.000"], correct: 2 },
+            { category: "Matematika: Logika", question: "Jumlah 2 bilangan = 20. Selisihnya = 4. Bilangannya?", options: ["10 & 10", "12 & 8", "15 & 5", "14 & 6"], correct: 1 },
+
+            // --- MATEMATIKA: Perkalian ---
+            { category: "Matematika: Distributif", question: "Hitung 6 x 15 paling mudah pakai cara...", options: ["6 x 10 x 5", "(6 x 10) + (6 x 5)", "6 + 10 + 5", "(6+10) x 5"], correct: 1 },
+            { category: "Matematika: Logika", question: "8 x 5 = 40. Maka 8 x 6 = ...", options: ["40 + 8", "40 + 6", "40 + 5", "40 x 1"], correct: 0 },
+            { category: "Matematika: Cerita", question: "4 mobil, isi 5 orang. Turun 2 orang tiap mobil. Sisa orang?", options: ["12", "15", "18", "20"], correct: 0 },
+            { category: "Matematika: Asosiatif", question: "Hasil (4 x 5) x 2 sama dengan...", options: ["4 x (5 + 2)", "4 x (5 x 2)", "(4 + 5) x 2", "20 x 4"], correct: 1 },
+            { category: "Matematika: Perkalian 0", question: "Bilangan dikali 100 hasilnya 0. Bilangan itu...", options: ["100", "1", "10", "0"], correct: 3 },
+            { category: "Matematika: Perkalian", question: "12 x 4 dalam penjumlahan berulang?", options: ["12+12+12", "4+4+4+4", "12+12+12+12", "12+4"], correct: 2 },
+            { category: "Matematika: Waktu", question: "Berapa hari dalam 5 minggu lebih 3 hari?", options: ["35", "38", "40", "32"], correct: 1 },
+            { category: "Matematika: Komutatif", question: "A x 7 = 7 x 9. Nilai A?", options: ["7", "9", "63", "0"], correct: 1 },
+            { category: "Matematika: Cerita", question: "3 kambing & 4 ayam. Total kaki?", options: ["20", "18", "22", "14"], correct: 0 },
+            { category: "Matematika: Pola", question: "3, 6, 9, 12, ... Selanjutnya hasil 3 x ...", options: ["4", "5", "6", "3"], correct: 1 },
+
+            // --- PKn: HAK DAN KEWAJIBAN ---
+            { category: "PKn: Hak", question: "Hak anak di rumah adalah...", options: ["Membersihkan kamar", "Mendapat kasih sayang", "Mengerjakan PR", "Membantu ibu"], correct: 1 },
+            { category: "PKn: Kewajiban", question: "Kewajiban utama seorang siswa di sekolah adalah...", options: ["Mendapat nilai bagus", "Bermain dengan teman", "Belajar dengan tekun", "Mendapat uang jajan"], correct: 2 },
+            { category: "PKn: Hak & Kewajiban", question: "Hak dan kewajiban harus dilaksanakan secara...", options: ["Seimbang", "Dahulukan hak", "Dahulukan kewajiban saja", "Terpisah"], correct: 0 },
+            { category: "PKn: Kewajiban", question: "Jika kamar tidur berantakan, kewajiban kita adalah...", options: ["Menunggu ibu membersihkan", "Membiarkan saja", "Merapikannya sendiri", "Pindah tidur ke sofa"], correct: 2 },
+            { category: "PKn: Hak", question: "Siti berhak menggunakan fasilitas sekolah, contohnya...", options: ["Mencoret tembok", "Meminjam buku di perpustakaan", "Memetik bunga taman", "Membuang sampah sembarangan"], correct: 1 },
+            { category: "PKn: Kewajiban", question: "Kewajiban kita terhadap tanaman di halaman rumah adalah...", options: ["Memetiknya", "Menginjaknya", "Menyiramnya setiap hari", "Menebangnya"], correct: 2 },
+            { category: "PKn: Analisis", question: "Kita boleh menuntut hak setelah kita...", options: ["Marah-marah", "Melaksanakan kewajiban", "Menangis", "Tidur siang"], correct: 1 },
+            { category: "PKn: Kewajiban Warga", question: "Kewajiban kita saat melihat sampah berserakan di jalan adalah...", options: ["Mendiamkannya", "Memungut dan membuang ke tong sampah", "Menendangnya", "Menyalahkan orang lain"], correct: 1 },
+
+            // --- PKn: ATURAN DAN NORMA ---
+            { category: "PKn: Aturan", question: "Aturan di sekolah dibuat agar kegiatan belajar menjadi...", options: ["Kacau", "Membosankan", "Tertib dan lancar", "Menakutkan"], correct: 2 },
+            { category: "PKn: Norma Kesopanan", question: "Saat berjalan melewati orang yang lebih tua, sebaiknya kita...", options: ["Lari kencang", "Menunduk dan bilang permisi", "Berteriak", "Diam saja"], correct: 1 },
+            { category: "PKn: Aturan Jalan", question: "Saat lampu lalu lintas berwarna merah, pengguna jalan wajib...", options: ["Berhenti", "Jalan terus", "Ngebut", "Bunyi klakson"], correct: 0 },
+            { category: "PKn: Sanksi", question: "Anak yang melanggar aturan sekolah akan mendapatkan...", options: ["Hadiah", "Pujian", "Sanksi atau hukuman", "Uang saku"], correct: 2 },
+            { category: "PKn: Aturan Rumah", question: "Sebelum pergi bermain, aturan yang biasa dilakukan adalah...", options: ["Langsung lari", "Berpamitan kepada orang tua", "Sembunyi-sembunyi", "Mengunci pintu kamar"], correct: 1 },
+            { category: "PKn: Norma Agama", question: "Berdoa sebelum makan adalah contoh pelaksanaan norma...", options: ["Hukum", "Kesopanan", "Agama", "Kesusilaan"], correct: 2 },
+            { category: "PKn: Analisis", question: "Mengapa kita tidak boleh membuang sampah di sungai?", options: ["Karena sungai jadi indah", "Agar ikan senang", "Bisa menyebabkan banjir (melanggar aturan)", "Supaya airnya jernih"], correct: 2 },
+
+            // --- PKn: RUKUN DAN GOTONG ROYONG ---
+            { category: "PKn: Hidup Rukun", question: "Hidup rukun dengan tetangga membuat suasana lingkungan menjadi...", options: ["Bising", "Damai dan tenteram", "Menakutkan", "Sepi sekali"], correct: 1 },
+            { category: "PKn: Tetangga", question: "Jika tetangga sedang sakit, sikap kita sebaiknya...", options: ["Menjenguk dan mendoakan", "Memutar musik keras", "Masa bodoh", "Menertawakan"], correct: 0 },
+            { category: "PKn: Gotong Royong", question: "Kerja bakti membersihkan selokan kampung adalah contoh...", options: ["Tugas Pak RT", "Hukuman warga", "Gotong royong", "Kerja paksa"], correct: 2 },
+            { category: "PKn: Manfaat", question: "Pekerjaan berat jika dikerjakan dengan gotong royong akan terasa...", options: ["Semakin berat", "Ringan dan cepat selesai", "Sia-sia", "Lama sekali"], correct: 1 },
+            { category: "PKn: Rukun Warga", question: "Saat ada musyawarah warga, setiap orang berhak...", options: ["Memaksakan kehendak", "Menyampaikan pendapat", "Tidur", "Pulang"], correct: 1 },
+            { category: "PKn: Gotong Royong", question: "Contoh gotong royong di lingkungan sekolah adalah...", options: ["Menyontek saat ujian", "Mengerjakan piket kelas bersama", "Jajan bersama", "Pulang bersama"], correct: 1 },
+            { category: "PKn: Analisis", question: "Manusia disebut makhluk sosial karena...", options: ["Bisa hidup sendiri", "Suka menyendiri", "Tidak bisa hidup tanpa bantuan orang lain", "Suka marah"], correct: 2 },
+            { category: "PKn: Sikap", question: "Temanmu berbeda suku bangsa. Agar tetap rukun, kamu harus...", options: ["Menjauhinya", "Saling menghormati", "Mengejek logatnya", "Memaksanya ikut budayamu"], correct: 1 },
+            { category: "PKn: Pepatah", question: "Berat sama dipikul, ringan sama dijinjing. Artinya...", options: ["Bekerja sendiri", "Bersaing", "Bekerjasama dalam suka dan duka", "Bermalas-malasan"], correct: 2 },
+            { category: "PKn: Kerjasama", question: "Dalam permainan sepak bola, kemenangan diraih dengan cara...", options: ["Main sendiri", "Menyalahkan kiper", "Kerjasama tim", "Marah pada wasit"], correct: 2 }
         ];
 
         // Game State
         let currentQuestion = 0;
         let score = 0;
-        let correctCount = 0; // To track climbing progress
+        let correctCount = 0; 
+        let playerName = "Pendaki Cilik";
         
         // DOM Elements
         const questionText = document.getElementById('question-text');
@@ -413,61 +372,68 @@
         const categoryBadge = document.getElementById('category-badge');
         const gameArea = document.getElementById('game-area');
         const resultCard = document.getElementById('result-card');
+        const startScreen = document.getElementById('start-screen');
+        const nameInput = document.getElementById('player-name-input');
+        const displayPlayerName = document.getElementById('player-display-name');
 
-        // Initialize Game
+        // Functions
+        function startGameSession() {
+            const name = nameInput.value.trim();
+            if(name) {
+                playerName = name;
+            }
+            displayPlayerName.textContent = playerName;
+            
+            // Hide Start Screen with animation
+            startScreen.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-500');
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                initGame();
+            }, 500);
+        }
+
         function initGame() {
             loadQuestion();
         }
 
         function resetGame() {
-            // Reset variables
             currentQuestion = 0;
             score = 0;
             correctCount = 0;
 
-            // Reset UI
             scoreEl.textContent = '0';
             progressEl.textContent = '1';
             
-            // Reset climber position
             climber.style.bottom = '5%';
             climber.style.left = '10%';
-            climber.innerHTML = '🧗'; // Reset if it was a flag
+            climber.innerHTML = '🧗'; 
 
-            // Show Game Area, Hide Result
             resultCard.classList.add('hidden');
             gameArea.classList.remove('hidden');
 
-            // Remove any confetti
             document.querySelectorAll('.confetti').forEach(el => el.remove());
-
-            // Reload first question
             loadQuestion();
         }
 
         function loadQuestion() {
             const q = questionBank[currentQuestion];
             
-            // Update Text
             questionText.textContent = q.question;
             scoreEl.textContent = score;
             progressEl.textContent = currentQuestion + 1;
             categoryBadge.textContent = q.category;
             
-            // Color code category badge
             if(q.category.includes("Matematika")) {
                 categoryBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-600";
             } else {
-                categoryBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-red-100 text-red-600";
+                categoryBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700";
             }
 
-            // Reset UI
             feedbackDiv.classList.add('hidden');
             feedbackDiv.className = "hidden mt-4 text-center p-3 rounded-lg font-bold";
             nextBtn.classList.add('hidden');
             optionsContainer.innerHTML = '';
 
-            // Generate Options
             q.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold py-4 px-4 border border-blue-200 rounded-xl shadow-sm text-lg text-left";
@@ -478,7 +444,6 @@
         }
 
         function checkAnswer(selectedIndex, btn) {
-            // Disable all buttons
             const buttons = optionsContainer.querySelectorAll('button');
             buttons.forEach(b => b.disabled = true);
 
@@ -486,11 +451,10 @@
             const isCorrect = selectedIndex === q.correct;
 
             if (isCorrect) {
-                // Correct Logic
                 btn.classList.remove('bg-blue-50', 'text-blue-800');
                 btn.classList.add('bg-green-500', 'text-white', 'border-green-600');
                 
-                feedbackDiv.textContent = "Benar! Kamu naik lebih tinggi! 🧗";
+                feedbackDiv.textContent = "Hebat! Jawabanmu benar! 🧗";
                 feedbackDiv.classList.remove('hidden');
                 feedbackDiv.classList.add('bg-green-100', 'text-green-700');
                 
@@ -498,15 +462,13 @@
                 correctCount++;
                 moveClimber();
             } else {
-                // Wrong Logic
                 btn.classList.remove('bg-blue-50', 'text-blue-800');
                 btn.classList.add('bg-red-500', 'text-white', 'border-red-600');
                 
-                // Highlight correct answer
                 buttons[q.correct].classList.remove('bg-blue-50', 'text-blue-800');
                 buttons[q.correct].classList.add('bg-green-500', 'text-white', 'border-green-600');
 
-                feedbackDiv.textContent = "Yah salah... Jawaban yang benar ditandai hijau.";
+                feedbackDiv.textContent = "Kurang tepat. Coba ingat-ingat lagi ya.";
                 feedbackDiv.classList.remove('hidden');
                 feedbackDiv.classList.add('bg-red-100', 'text-red-700');
             }
@@ -516,21 +478,10 @@
         }
 
         function moveClimber() {
-            // Calculate position along the mountain path
-            // We want to go from bottom left/center to top center
-            // Simple logic: increase 'bottom' percentage and zig-zag 'left'
-            
             const totalQuestions = questionBank.length;
             const progress = correctCount / totalQuestions; 
-            
-            // Bottom moves from 5% to 85%
             const bottomPos = 5 + (progress * 80);
-            
-            // Left zig zags. 
-            // Start 10%. Summit 50%.
-            // Let's make it wiggle towards 50%.
-            // A simple linear interpolation for now to ensure they reach the peak visually
-            const leftPos = 10 + (progress * 40); // 10% -> 50%
+            const leftPos = 10 + (progress * 40); 
             
             climber.style.bottom = `${bottomPos}%`;
             climber.style.left = `${leftPos}%`;
@@ -538,7 +489,6 @@
 
         function nextQuestion() {
             currentQuestion++;
-            
             if (currentQuestion < questionBank.length) {
                 loadQuestion();
             } else {
@@ -551,12 +501,16 @@
             resultCard.classList.remove('hidden');
             document.getElementById('final-score').textContent = score;
             
-            if(score > 200) {
+            // SAVE TO DATABASE
+            if(window.saveScoreToDB) {
+                window.saveScoreToDB(score, playerName);
+            }
+
+            if(score > 350) {
                 createConfetti();
-                // Move climber to very peak
                 climber.style.bottom = "88%";
                 climber.style.left = "50%";
-                climber.innerHTML = "🚩"; // Change to flag
+                climber.innerHTML = "🚩"; 
             }
         }
 
@@ -570,10 +524,6 @@
                 document.body.appendChild(conf);
             }
         }
-
-        // Start
-        initGame();
-
     </script>
 </body>
 </html>
